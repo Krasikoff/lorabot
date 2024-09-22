@@ -22,9 +22,9 @@ load_dotenv()
 
 token = os.getenv('TG_TOKEN')
 bot = Bot(token=token)
-#√storage = MemoryStorage()
+#storage = MemoryStorage()
 dp = Dispatcher(bot = bot, storage = MemoryStorage())
-lora_bot = LoraBot('MyAnalyticBot')
+lora_bot = LoraBot('TG_BOT_NAME')
 router = Router()
 
 

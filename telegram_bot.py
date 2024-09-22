@@ -9,7 +9,7 @@ load_dotenv()
 
 token = os.getenv('TG_TOKEN')
 bot = telebot.TeleBot(token)
-lora_bot = LoraBot('MyAnalyticBot')
+lora_bot = LoraBot('TG_BOT_NAME')
 
 user_markup = types.ReplyKeyboardMarkup(True)
 menu = ['Menu a', 'Menu b', 'Make order', 'Leave review', 'Leave rating']
