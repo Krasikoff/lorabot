@@ -1,8 +1,13 @@
+import os
+from dotenv import load_dotenv
+
 import telebot
 from telebot import types
 from lorabot import LoraBot
 
-token = ""
+load_dotenv()
+
+token = os.getenv('TG_TOKEN')
 bot = telebot.TeleBot(token)
 lora_bot = LoraBot('MyAnalyticBot')
 
@@ -31,6 +36,9 @@ user_analytics = {}
 
 
 def message_password(message):
+    """Колбэк при вводе пароля."""
+
+    print('---Колбэк при вводе пароля--', message.text)
     if lora_bot.check_password(message.text):
         bot.send_message(message.chat.id, "Choose what you want to analyze", reply_markup=analytics_markup)
         bot.register_next_step_handler(message, analytics)
@@ -39,6 +47,9 @@ def message_password(message):
 
 
 def analytics(message):
+    """Колбэк меню аналитики."""
+
+    print('---Колбэк меню аналитики--', message.text)
     if message.text == 'SQL':
         bot.send_message(message.chat.id, "Write your SQL", reply_markup=no_markup)
         user_analytics[message.from_user.id] = {}
@@ -56,6 +67,9 @@ def analytics(message):
 
 
 def analytics_date(message):
+    """Колбэк для выбора времени аналитики."""
+
+    print('---Колбэк для выбора времени аналитики--', message.text)
     if user_analytics[message.from_user.id]['analytics_type'] == 'SQL':
         info = lora_bot.sql_query(message.text)
         bot.send_message(message.chat.id, info, reply_markup=user_markup)
@@ -77,6 +91,9 @@ def analytics_date(message):
 
 
 def analytics_type(message):
+    """Колбэк для выбора типа аналитики."""
+
+    print('---Колбэк для выбора типа аналитики.--', message.text)
     if message.text == 'No':
         user_analytics[message.from_user.id]['type'] = None
     else:
@@ -168,6 +185,9 @@ def analytics_type(message):
 
 
 def rating(message):
+    """Колбэк кнопки рэйтинга."""
+
+    print('---Колбэк кнопки рэйтинга.--', message.text)
     if message.text in ('1', '2', '3', '4', '5'):
         rating = int(message.text)
         lora_bot.assessment(rating, message.from_user.id)
@@ -177,12 +197,17 @@ def rating(message):
 
 
 def review(message):
+    """Колбэк кнопки ревью."""
+    print('---Колбэк кнопки ревью--', message.text)
     lora_bot.review(message.text, message.from_user.id)
     bot.send_message(message.chat.id, "Thank you!", reply_markup=user_markup)
 
 
 @bot.message_handler(commands=['start'])
 def handle_text(message):
+    """Колбэк старт."""
+    
+    print('---Колбэк старта--', message.text)
     lora_bot.user(message.from_user.id, message.from_user.language_code)
     lora_bot.event('Menu received', 'Order', message.from_user.id)
     bot.send_message(message.chat.id, "Hi! Choose commands or write message", reply_markup=user_markup)
@@ -190,6 +215,9 @@ def handle_text(message):
 
 @bot.message_handler(commands=['command_a', 'command_b'])
 def handle_text(message):
+    """Колбэк / команд а и б."""
+
+    print('---Колбэк / команд а и б--', message.text)
     lora_bot.message(message.text, 'command', message.from_user.id)
     if message.text == 'command_b':
         lora_bot.event('Event for command that do something', 'Event simple command', message.from_user.id)
@@ -198,6 +226,8 @@ def handle_text(message):
 
 @bot.message_handler(commands=['secret'])
 def handle_text(message):
+
+    print('---Колбэк сектрет--', message.text)
     lora_bot.message(message.text, 'command', message.from_user.id)
     lora_bot.event('Event for secret command', 'Secret', message.from_user.id)
     bot.send_message(message.chat.id, f'You use the command {message.text}')
@@ -205,6 +235,9 @@ def handle_text(message):
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
+    """Колбэк любого текста. Обычное меню."""
+
+    print('---Колбэк обычного меню--', message.text)
     if message.text == "analytics":
         # make message chains for analytics
         bot.send_message(message.from_user.id, 'Enter password')
@@ -222,9 +255,11 @@ def handle_text(message):
             bot.send_message(message.chat.id, text, reply_markup=user_markup)
         elif message.text == 'Leave rating':
             bot.send_message(message.from_user.id, 'Write the mark to bot(1-5):')
+            lora_bot.message(message.text, 'text', message.from_user.id)#
             bot.register_next_step_handler(message, rating)
         elif message.text == 'Leave review':
             bot.send_message(message.from_user.id, 'Write your review')
+            lora_bot.message(message.text, 'text', message.from_user.id)#
             bot.register_next_step_handler(message, review)
         elif message.text in menu:
             text = f'You use the menu command {message.text}'
